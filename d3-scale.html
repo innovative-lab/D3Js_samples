@@ -1,0 +1,115 @@
+<html>
+
+<head>
+    <title>D3 Custom scale</title>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <style>
+    </style>
+</head>
+
+<body>
+    <div class='container'></div>
+    <script>
+        window.onload = function () {
+            var skillSet = [{
+                skill: 'AngularJs',
+                rating: 8.5
+            }, {
+                skill: 'ReactJs',
+                rating: 7
+            }, {
+                skill: 'JavaScript',
+                rating: 9
+            }, {
+                skill: 'D3Js',
+                rating: 8
+            }]
+            var height = 400, width = 1000;
+            var padding = 50;
+
+            var xAxisData = skillSet.map((skill) => {
+                return skill.skill;
+            })
+            var yAxisData = skillSet.map((skill) => {
+                return skill.rating;
+            })
+            var graphWidth = width - (padding * 2);
+            var graphHeight = height - (padding * 2);
+            var svg = d3.select('.container').append('svg')
+                .attr('width', width)
+                .attr('height', height)
+            svg.append('svg:g')
+                .append('rect')
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('width', width)
+                .attr('height', height)
+                .attr('fill', "#e2e2e2")
+                .attr('stroke', "#e2e2e2")
+                .attr('stroke-width', 1);
+
+            var xScale = d3.scale.ordinal().domain(xAxisData).rangeBands([0, graphWidth]);
+            var xScaleRangeBand = xScale.rangeBand();
+            var yScale = d3.scale.linear().domain([10, 5]).range([0, graphHeight]);
+
+            var xAxis = d3.svg.axis().scale(xScale);
+            var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5);
+
+            var createTraingle = function (xCord, yCord, cond) {
+                var startXCord = xCord - (graphHeight - yCord);
+                var endXCord = xCord + (graphHeight - yCord);
+                // var startXCord = xCord - 100;
+                // var endXCord = xCord + 100;
+                if (cond === 'before') {
+                    return 'M' + startXCord + ',' + (height - padding) + ' L' + xCord + ',' + (height - padding) + ' L' + endXCord + ',' + (height - padding);
+
+                } else {
+                    return 'M' + startXCord + ',' + (height - padding) + ' L' + xCord + ',' + (yCord + padding) + ' L' + endXCord + ',' + (height - padding);
+
+                }
+            }
+            svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + padding + "," + padding + ")")
+                .call(yAxis);
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(" + (padding) + "," + (height - padding) + ")")
+                .call(xAxis);
+
+            d3.selectAll('path')
+                .style({ 'stroke': 'Black', 'fill': 'none', 'stroke-width': '1px' });
+
+            svg.append('svg:g')
+                .attr("transform", "translate(" + (padding) + "," + 0 + ")")
+                .selectAll('traingles')
+                .data(skillSet)
+                .enter()
+                .append('path')
+                .attr('d', (d) => {
+                    var points = {
+                        xCord: xScale(d.skill) + (xScaleRangeBand / 2),
+                        yCord: yScale(d.rating)
+                    }
+                    return createTraingle(points.xCord, points.yCord, 'before');
+                })
+                .attr('stroke', '#d1a541')
+                .attr('stroke-width', 2)
+                .attr('fill', 'rgba(209,165,65,0.2)')
+                .transition()
+                .duration(2000)
+                .ease('elastic')
+                .attr('d', (d) => {
+                    var points = {
+                        xCord: xScale(d.skill) + (xScaleRangeBand / 2),
+                        yCord: yScale(d.rating)
+                    }
+                    return createTraingle(points.xCord, points.yCord);
+                })
+
+
+        }
+    </script>
+</body>
+
+</html>

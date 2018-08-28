@@ -1,0 +1,41 @@
+<html>
+
+<head>
+    <style>
+        img {
+            height: 500px;
+            width: 500px;
+            margin: auto;
+            display: block;
+            margin-top: 200px;
+            clip-path: polygon(10% 10%, 100% 0%, 100% 75%, 75% 75%, 75% 100%, 50% 75%, 0% 75%);
+            transition: clip-path 1s;
+        }
+
+        /* img:hover{
+            clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 75% 75%, 75% 100%, 50% 75%, 0% 75%);
+
+        } */
+    </style>
+
+</head>
+
+<body>
+    <img src="me.jpg" alt="">
+    <script>
+        window.onload = function () {
+            var timeoutArray = [];
+            var img = document.getElementsByTagName('img')[0];
+            img.addEventListener('mousemove', function (event) {
+                console.log('el', event);
+                if (event.offsetX < 100 && event.offsetY < 100) {
+                    img.style.clipPath= 'polygon(0% 0%, 90% 10%, 100% 75%, 75% 75%, 75% 100%, 50% 75%, 10% 65%)';
+                }else{
+                    img.style.clipPath= 'polygon(10% 10%, 100% 0%, 100% 75%, 75% 75%, 75% 100%, 50% 75%, 0% 75%)';
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>

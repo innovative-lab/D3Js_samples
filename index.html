@@ -1,0 +1,105 @@
+<html>
+
+<head>
+    <style>
+    </style>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        window.onload = function () {
+
+            var dataSet = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }], svg, circle;
+
+            document.getElementById('1').addEventListener('click', function () {
+                svg.selectAll('circle')
+                    .attr('fill', (d) => {
+                        return 'lightgreen';
+                    })
+            })
+
+            var start = function () {
+                svg = d3.select('svg')
+                    .attr('height', 500)
+                    .attr('width', 500);
+
+                var placeHolder = svg
+                    // .selectAll('circle')
+                    // .data(dataSet)
+                    // .enter()
+                    .append('path')
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 2)
+                    // .attr('d', () => {
+                    //     return 'M0,0 L0,0'
+                    // })
+                    .attr('fill', 'white')
+                    // .transition()
+                    .attr('d', () => {
+                        return 'M0,0 L0,0'
+                    })
+                    // .duration(1000)
+                    .transition()
+                    .attr('d', () => {
+                        return 'M0,0 L100,0'
+                    })
+                    .duration(1000)
+                svg.append('path')
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 2)
+                    // .attr('d', () => {
+                    //     return 'M0,0 L0,0'
+                    // })
+                    .attr('fill', 'white')
+                    // .transition()
+                    .attr('d', () => {
+                        return 'M100,0 L100,0'
+                    })
+                    // .duration(1000)
+                    .transition()
+                    .attr('d', () => {
+                        return 'M100,0 L100,100'
+                    })
+                    .delay(1000)
+                    .duration(1000)
+                    .remove()
+                // .transition()
+                // .attr('d', () => {
+                //     return 'M0,0 L100,0 L100,100 L0,100'
+                // })
+                // .duration(1000)
+                // .attr('d', () => {
+                //     return 'M0,0 L100,0 L100,100 L0,100 L0,0'
+                // })
+                // // .attr('fill', '#e2e2e2')
+                // .duration(1000)
+
+
+                // .enter()
+                // .append('circle')
+                // .attr('d', (d) => { d })
+                // .attr('cx', (d) => {
+                //     return d.id * 50;
+                // })
+                // .attr('cy', (d) => {
+                //     return d.id * 50;
+                // })
+                // .attr('r', 20);
+
+            }
+            start();
+
+        };
+    </script>
+</head>
+
+<body>
+    <svg>
+        <!-- <circle cx="50" cy='250' r="30" fill="orange"></circle>
+        <circle cx="100" cy='250' r="30" fill="orange"></circle> -->
+        <!-- <circle cx="150" cy='250' r="30" fill="orange"></circle>
+        <circle cx="200" cy='250' r="30" fill="orange"></circle>
+        <circle cx="250" cy='250' r="30" fill="orange"></circle> -->
+    </svg>
+    <button class='div' id='1'>Change Color</button>
+</body>
+
+</html>

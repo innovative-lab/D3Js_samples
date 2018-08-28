@@ -1,0 +1,744 @@
+<html>
+
+<head>
+    <title>Bored AF</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+        window.onload = function () {
+
+            var toggleButtons = document.getElementsByTagName('button');
+
+
+            var defaultTransitionTime = 1000;
+            var padding = {
+                left: 8,
+                right: 8,
+                top: 10,
+                bottom: 10
+            };
+            var line = d3.line()
+                .x(function (d) {
+                    return d.x;
+                })
+                .y(function (d) {
+                    return d.y;
+                });
+            // var screenWidth = document.getElementsByTagName('body')[0].clientWidth - (padding.left + padding.right);
+            // var screenHeight = document.getElementsByTagName('body')[0].clientHeight - (padding.top + padding.bottom);
+            var screenWidth = 1904
+            var screenHeight = 927
+            var svg = d3.select('body').append('svg')
+                .attr('height', screenHeight)
+                .attr('width', screenWidth);
+
+            //////////////////////////////////
+            var defs = svg.append("defs");
+
+            var gradient = defs.append("linearGradient")
+                .attr("id", "svgGradient")
+                .attr("x1", "0%")
+                .attr("x2", "0%")
+                .attr("y1", "0%")
+                .attr("y2", "100%");
+
+            var start = gradient.append("stop")
+                .attr('class', 'start')
+                .attr("offset", "0%")
+                .attr("stop-color", "#599df0")
+                .attr("stop-opacity", 1)
+            // .transition()
+            // .attr("stop-color", "blue")
+            // .attr("stop-opacity", 1)
+            // .duration(2000);
+
+            var mid = gradient.append("stop")
+                .attr('class', 'mid')
+                .attr("offset", "40%")
+                .attr("stop-color", "#b9dfe4")
+                .attr("stop-opacity", 1);
+
+            var end = gradient.append("stop")
+                .attr('class', 'end')
+                .attr("offset", "60%")
+                .attr("stop-color", "#ffe2c9")
+                .attr("stop-opacity", 1);
+
+            //////////////////////////////////
+
+
+            // create filter with id #drop-shadow
+            // height=130% so that the shadow is not clipped
+            var filter = defs.append("filter")
+                .attr("id", "drop-shadow")
+                .attr("height", "110%");
+
+            // SourceAlpha refers to opacity of graphic that this filter will be applied to
+            // convolve that with a Gaussian with standard deviation 3 and store result
+            // in blur
+            filter.append("feGaussianBlur")
+                .attr("in", "SourceAlpha")
+                .attr("stdDeviation", 5)
+                .attr("result", "blur");
+
+            // translate output of Gaussian blur to the right and downwards with 2px
+            // store result in offsetBlur
+            filter.append("feOffset")
+                .attr("in", "blur")
+                .attr("dx", -5)
+                .attr("dy", 0)
+                .attr("result", "offsetBlur");
+
+            // overlay original SourceGraphic over translated blurred opacity by using
+            // feMerge filter. Order of specifying inputs is important!
+            var feMerge = filter.append("feMerge");
+
+            feMerge.append("feMergeNode")
+                .attr("in", "offsetBlur")
+            feMerge.append("feMergeNode")
+                .attr("in", "SourceGraphic");
+
+            ///////////////////////////////////////////////////////////// 
+            var canvas = svg.append('svg:g')
+            canvas.append('rect')
+                .attr('height', screenHeight)
+                .attr('width', screenWidth)
+                .attr('fill', '	white')
+
+            // var mainGroup = canvas.append('svg:g')
+            var mainBody = canvas.append('rect')
+                .attr('height', screenHeight)
+                .attr('width', screenWidth - ((padding.left + padding.right) * 10))
+                .attr('stroke-width', 2)
+                .attr('fill', "url(#svgGradient)")
+                .attr('x', padding.left * 10)
+                .attr('y', 0)
+
+            // var baseLine = canvas.append("path")
+            //     .attr('d', function () {
+            //         return 'M' + padding.left * 10 + ',' + (screenHeight - 250) + 'L' +
+            //             (screenWidth - (padding.right * 10)) + ',' + (screenHeight - 250);
+            //     })
+            //     .attr("stroke", "gray")
+            //     .attr("stroke-width", 1)
+            //     .attr("fill", "none");
+            var baseLineWidth = screenWidth - ((padding.left + padding.right) * 10);
+            var baseLine = canvas.append('rect')
+                .attr('height', 20)
+                .attr('width', baseLineWidth)
+                .attr('stroke-width', 2)
+                .attr('stroke', 'gray')
+                .attr('fill', 'gray')
+                .attr('x', padding.left * 10)
+                .attr('y', (screenHeight - 250))
+            var gorund = canvas.append('rect')
+                .attr('height', (screenHeight - 250))
+                .attr('width', screenWidth - ((padding.left + padding.right) * 10))
+                // .attr('stroke-width', 2)
+                // .attr('stroke', 'gray')
+                .attr('fill', '#789173')
+                .attr('x', padding.left * 10)
+                .attr('y', (screenHeight - 250))
+
+            var structure = canvas.append('svg:g')
+                .attr('transform', 'translate(' + padding.left * 20 + ',0)')
+            var structureWidth = screenWidth - ((padding.left + padding.right) * 20)
+            structure.append('rect')
+                .attr('width', structureWidth)
+                .attr('height', screenHeight - 250)
+                .attr('fill', 'transparent')
+                .attr('stroke', 'none')
+                .attr('stroke-width', 1)
+            var baseStructureWidth = screenWidth - ((padding.left + padding.right) * 20)
+            var baseStructure = structure.append('rect')
+                .attr('width', baseStructureWidth)
+                .attr('height', 80)
+                .attr('fill', 'silver')
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('x', 0)
+                .attr('y', screenHeight - 250 - 80)
+                .style("filter", "url(#drop-shadow)");
+
+            var mainBodyWidth = screenWidth - ((padding.left + padding.right) * 100)
+            var mainBodyHeight = 300
+            var mainBody = structure.append('rect')
+                .attr('id', 'mainBody')
+                .attr('width', mainBodyWidth)
+                .attr('height', 0)
+                .attr('fill', 'whitesmoke')
+                .attr('stroke', 'gray')
+                .attr('stroke-width', 2)
+                .attr('x', (baseStructureWidth - mainBodyWidth) / 2)
+                .attr('y', screenHeight - 250 - 80)
+
+
+            ////////////////////
+            svg.selectAll("#mainBody")
+                .transition("playStage1")
+                .ease(d3.easeSin)
+                .attr('height', mainBodyHeight)
+                .attr('y', screenHeight - 250 - 80 - mainBodyHeight)
+                .duration(defaultTransitionTime * 2);
+            ////////////////////
+
+
+            var leftBodyWidth = mainBodyWidth / 2
+            var leftBodyHeight = 250;
+            var leftBody = structure.append('rect')
+                .attr('id', 'leftBody')
+                .attr('width', leftBodyWidth)
+                .attr('height', leftBodyHeight)
+                .attr('fill', '#dedede')
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('x', (baseStructureWidth - mainBodyWidth) / 2 - leftBodyWidth)
+                .attr('y', screenHeight - 250 - 80 - leftBodyHeight)
+                .style("filter", "url(#drop-shadow)");
+
+
+            var leftExtremeBodyWidth = (mainBodyWidth / 2) * 0.6;
+            var leftExtremeBodyHeight = leftBodyHeight;
+            var leftExtremeBodyPoints = [
+                { x: (baseStructureWidth - mainBodyWidth) / 2 - leftBodyWidth, y: (screenHeight - 250 - 80) },
+                { x: (baseStructureWidth - mainBodyWidth) / 2 - leftBodyWidth, y: (screenHeight - 250 - 80 - leftExtremeBodyHeight) },
+                { x: (baseStructureWidth - mainBodyWidth) / 2 - leftBodyWidth - leftExtremeBodyWidth, y: (screenHeight - 250 - 80 - leftExtremeBodyHeight + 20) },
+                { x: (baseStructureWidth - mainBodyWidth) / 2 - leftBodyWidth - leftExtremeBodyWidth, y: (screenHeight - 250 - 80) },
+            ]
+
+            var leftExtremeBody = structure.append('path')
+                .attr("d", line(leftExtremeBodyPoints) + 'Z')
+                .style("fill", "silver")
+                .style("filter", "url(#drop-shadow)");
+            // .style("stroke", "gray");
+
+
+            var rightBodyWidth = mainBodyWidth / 2
+            var rightBodyHeight = 250;
+            var rightBody = structure.append('rect')
+                .attr('id', 'rightBody')
+                .attr('width', rightBodyWidth)
+                .attr('height', rightBodyHeight)
+                .attr('fill', 'whitesmoke')
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('x', (baseStructureWidth - mainBodyWidth) / 2 + mainBodyWidth)
+                .attr('y', screenHeight - 250 - 80 - leftBodyHeight)
+
+            var rightExtremeBodyWidth = (mainBodyWidth / 2) * 0.6;
+            var rightExtremeBodyHeight = leftBodyHeight;
+            var rightExtremeBodyPoints = [
+                { x: (baseStructureWidth - mainBodyWidth) / 2 + mainBodyWidth + rightBodyWidth + rightExtremeBodyWidth, y: (screenHeight - 250 - 80) },
+                { x: (baseStructureWidth - mainBodyWidth) / 2 + mainBodyWidth + rightBodyWidth + rightExtremeBodyWidth, y: (screenHeight - 250 - 80 - rightExtremeBodyHeight + 20) },
+                { x: (baseStructureWidth - mainBodyWidth) / 2 + rightBodyWidth + mainBodyWidth, y: (screenHeight - 250 - 80 - rightExtremeBodyHeight) },
+                { x: (baseStructureWidth - mainBodyWidth) / 2 + rightBodyWidth + mainBodyWidth, y: (screenHeight - 250 - 80) },
+            ]
+
+            var rightExtremeBody = structure.append('path')
+                .attr("d", line(rightExtremeBodyPoints) + 'Z')
+                .style("fill", "snow")
+            // .style("stroke", "gray");
+
+            var mainDome = structure.append('svg:g')
+
+            mainDome.append('path')
+                .attr('d', function () {
+                    return 'M' + ((baseStructureWidth - mainBodyWidth) / 2) + ',' + (screenHeight - 250 - 80 - mainBodyHeight) + 'Q550,110 792,25' + 'Q1034,110 ' + ((baseStructureWidth - mainBodyWidth) / 2 + mainBodyWidth) + ',' + (screenHeight - 250 - 80 - mainBodyHeight);
+                })
+                .attr("stroke", "gray")
+                .attr("stroke-width", 1)
+                .attr("fill", "whitesmoke")
+                .style("filter", "url(#drop-shadow)");
+            mainDome.append('path')
+                .attr('d', function () {
+                    return 'M' + ((baseStructureWidth - mainBodyWidth) / 2) + ',' + (screenHeight - 250 - 80 - mainBodyHeight) + 'Q550,110 792,25' + 'Q550,150 ' + ((baseStructureWidth - mainBodyWidth) / 2 + 100) + ',' + (screenHeight - 250 - 80 - mainBodyHeight);
+                })
+                // .attr("stroke", "gray")
+                // .attr("stroke-width", 1)
+                .attr("fill", "#dedede")
+
+            // mainDome.append('path')
+            //     .attr('d', function () {
+            //         return 'M' + ((baseStructureWidth - mainBodyWidth) / 2 + mainBodyWidth) + ',' + (screenHeight - 250 - 80 - mainBodyHeight) + 'Q1034,110 792,25';
+            //     })
+            //     .attr("stroke", "gray")
+            //     .attr("stroke-width", 1)
+            //     .attr("fill", "none");
+
+            var addTopBody = function (XCord, YCord) {
+                var leftTopBody = structure.append('svg:g')
+                    .attr('transform', 'translate(' + XCord + ',' + YCord + ')')
+
+                var leftTopBodyWidth = 40;
+                var leftTopBodyHeight = 50;
+
+                leftTopBody.append("rect")
+                    .attr('id', "left_top_body_1")
+                    .attr('height', leftTopBodyHeight)
+                    .attr('width', leftTopBodyWidth)
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('x', 30)
+                    .attr('y', 0)
+                    .attr('fill', 'whitesmoke')
+
+                var leftTopBodyPoints = [
+                    { x: 30, y: 50 },
+                    { x: 30, y: 0 },
+                    { x: 0, y: 10 },
+                    { x: 0, y: 50 },
+                ]
+                var leftExtremeTopBody = leftTopBody.append('path')
+                    .attr("d", line(leftTopBodyPoints) + 'Z')
+                    // .style("stroke", "gray")
+                    .attr("fill", "silver")
+                    .style("filter", "url(#drop-shadow)");
+                var rightTopBodyPoints = [
+                    { x: 100, y: 50 },
+                    { x: 100, y: 10 },
+                    { x: 70, y: 0 },
+                    { x: 70, y: 50 },
+                ]
+                var rightExtremeTopBody = leftTopBody.append('path')
+                    .attr("d", line(rightTopBodyPoints) + 'Z')
+                    .style("fill", "white")
+
+
+                leftTopBody.append('path')
+                    .attr('d', function () {
+                        return 'M 0,10 Q-10,-50 50,-70 Q110,-50 100,10 ';
+                    })
+                    .attr("fill", "whitesmoke")
+                    .style("filter", "url(#drop-shadow)");
+
+                leftTopBody.append('path')
+                    .attr('d', function () {
+                        return 'M 0,10 Q-10,-50 50,-70 Q-10,-30 40,10 ';
+                    })
+                    .attr("fill", "#dedede")
+
+                // leftTopBody.append('path')
+                //     .attr('d', function () {
+                //         return 'M 100,10 ';
+                //     })
+                //     .attr("stroke", "gray")
+                //     .attr("stroke-width", 1)
+                //     .attr("fill", "none");
+            }
+            addTopBody(((baseStructureWidth - mainBodyWidth) / 2 - 100), (screenHeight - 250 - 80 - leftBodyHeight - 50));
+            addTopBody(((baseStructureWidth - mainBodyWidth) / 2 + mainBodyWidth), (screenHeight - 250 - 80 - leftBodyHeight - 50));
+
+            var mainDoor = structure.append('svg:g')
+                .attr('transform', 'translate(' + ((baseStructureWidth - mainBodyWidth) / 2) + ',' + (screenHeight - 250 - 80) + ')');
+            mainDoor.append('rect')
+                .attr('width', mainBodyWidth - 100)
+                .attr('height', mainBodyHeight - 150)
+                .attr('x', 50)
+                .attr('y', -150)
+                .attr('fill', '#e8e8e8')
+            mainDoor.append('rect')
+                .attr('width', 50)
+                .attr('height', mainBodyHeight - 150)
+                .attr('x', mainBodyWidth - 100)
+                .attr('y', -150)
+                // .attr('stroke-width', 1)
+                // .attr('stroke','gray')
+                .attr('fill', '#d3d3d3')
+            mainDoor.append('path')
+                .attr('id', "main_door")
+                .attr('d', function () {
+                    return 'M' + 50 + ',-150 Q' + 50 + ',-230 ' + mainBodyWidth / 2 + ',' + (30 - mainBodyHeight) + ' Q' + (mainBodyWidth - 50) + ',-230 ' + (mainBodyWidth - 50) + ',-150';
+                })
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('fill', '#e8e8e8')
+
+
+            mainDoor.append('path')
+                .attr('id', "main_door")
+                .attr('d', function () {
+                    return 'M' + (mainBodyWidth - 100) + ',-150 Q' + (mainBodyWidth - 100) + ',-230 ' + mainBodyWidth / 2 + ',' + (30 - mainBodyHeight) + ' Q' + (mainBodyWidth - 50) + ',-230 ' + (mainBodyWidth - 50) + ',-150';
+                })
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('fill', '#d3d3d3')
+
+            var sideDoor = function (XCord, YCord) {
+                var leftDoor = structure.append('svg:g')
+                    .attr('transform', 'translate(' + XCord + ',' + YCord + ')');
+                var leftLowerDoor = leftDoor.append('rect')
+                    .attr('width', leftBodyWidth - 50)
+                    .attr('height', leftBodyHeight - 200)
+                    .attr('x', 25)
+                    .attr('y', -50)
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#e8e8e8')
+
+                leftDoor.append('rect')
+                    .attr('width', 30)
+                    .attr('height', leftBodyHeight - 200)
+                    .attr('x', leftBodyWidth - 55)
+                    .attr('y', -50)
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#d3d3d3')
+
+                leftDoor.append('path')
+                    .attr('id', "main_door")
+                    .attr('d', function () {
+                        return 'M' + 25 + ',' + (-50) + ' Q' + 25 + ',' + (-90) + ' ' + (leftBodyWidth) / 2 + ',' + (-100) + ' Q' + (leftBodyWidth - 50 + 25) + ',' + (-90) + ' ' + (leftBodyWidth - 50 + 25) + ',' + (-50);
+                    })
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#e8e8e8')
+
+                leftDoor.append('path')
+                    .attr('id', "main_door")
+                    .attr('d', function () {
+                        return 'M' + (leftBodyWidth - 55) + ',' + (-50) + ' Q' + (leftBodyWidth - 55) + ',' + (-90) + ' ' + (leftBodyWidth) / 2 + ',' + (-100) + ' Q' + (leftBodyWidth - 50 + 25) + ',' + (-90) + ' ' + (leftBodyWidth - 50 + 25) + ',' + (-50);
+                    })
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#d3d3d3')
+
+                var leftUpperDoor = leftDoor.append('rect')
+                    .attr('width', leftBodyWidth - 50)
+                    .attr('height', leftBodyHeight - 200)
+                    .attr('x', 25)
+                    .attr('y', -175)
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#e8e8e8')
+
+                leftDoor.append('rect')
+                    .attr('width', 30)
+                    .attr('height', leftBodyHeight - 200)
+                    .attr('x', leftBodyWidth - 55)
+                    .attr('y', -175)
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#d3d3d3')
+
+                leftDoor.append('path')
+                    .attr('id', "main_door")
+                    .attr('d', function () {
+                        return 'M' + 25 + ',' + (-175) + ' Q' + 25 + ',' + (-215) + ' ' + (leftBodyWidth) / 2 + ',' + (-225) + ' Q' + (leftBodyWidth - 50 + 25) + ',' + (-215) + ' ' + (leftBodyWidth - 50 + 25) + ',' + (-175) + ' Q' + (leftBodyWidth - 50 + 25) + ',' + (-215) + ' ' + (leftBodyWidth - 50 + 25) + ',' + (-175);
+                    })
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#e8e8e8')
+                leftDoor.append('path')
+                    .attr('id', "main_door")
+                    .attr('d', function () {
+                        return 'M' + (leftBodyWidth - 55) + ',' + (-175) + ' Q' + (leftBodyWidth - 55) + ',' + (-215) + ' ' + (leftBodyWidth) / 2 + ',' + (-225) + ' Q' + (leftBodyWidth - 50 + 25) + ',' + (-215) + ' ' + (leftBodyWidth - 50 + 25) + ',' + (-175);
+                    })
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#d3d3d3')
+            }
+            sideDoor((((baseStructureWidth - mainBodyWidth) / 2) - leftBodyWidth), (screenHeight - 250 - 80));
+            sideDoor((((baseStructureWidth - mainBodyWidth) / 2) + mainBodyWidth), (screenHeight - 250 - 80));
+            var addExtremeSideDoor = function (XCord, YCord) {
+                var extremeSideDoor = structure.append('svg:g')
+                    .attr('transform', 'translate(' + ((baseStructureWidth - mainBodyWidth) / 2 - leftBodyWidth - leftExtremeBodyWidth) + ',' + (screenHeight - 250 - 80 - leftBodyHeight) + ')');
+
+                var ex_side_lower_door_data_set = [{
+                    x: 15, y: leftExtremeBodyHeight
+                }, {
+                    x: 15, y: leftExtremeBodyHeight - 40
+                }, {
+                    x: 15 + (leftExtremeBodyWidth - 30), y: leftExtremeBodyHeight - 50
+                },
+                {
+                    x: 15 + (leftExtremeBodyWidth - 30), y: leftExtremeBodyHeight
+                }]
+                var ex_side_lower_door = extremeSideDoor.append('path')
+                    .attr("d", line(ex_side_lower_door_data_set) + 'Z')
+                    .style("fill", "#d3d3d3")
+                // .style("stroke", "gray");
+                extremeSideDoor.append('path')
+                    .attr('d', function () {
+                        return 'M' + 15 + ',' + (leftExtremeBodyHeight - 40) + ' Q' + 15 + ',' + (leftExtremeBodyHeight - 40 - 30) + ' ' + (leftExtremeBodyWidth / 2) + ',' + (leftExtremeBodyHeight - 40 - 50) + ' Q' + (leftExtremeBodyWidth - 10) + ',' + (leftExtremeBodyHeight - 40 - 30) + ' ' + (leftExtremeBodyWidth - 15) + ',' + (leftExtremeBodyHeight - 50);
+                    })
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#d3d3d3')
+
+
+
+                var ex_side_upper_door_data_set = [{
+                    x: 15, y: leftExtremeBodyHeight / 2 + 10
+                }, {
+                    x: 15, y: leftExtremeBodyHeight / 2 - 40
+                }, {
+                    x: 15 + (leftExtremeBodyWidth - 30), y: leftExtremeBodyHeight / 2 - 50
+                },
+                {
+                    x: 15 + (leftExtremeBodyWidth - 30), y: leftExtremeBodyHeight / 2
+                }]
+                var ex_side_upper_door = extremeSideDoor.append('path')
+                    .attr("d", line(ex_side_upper_door_data_set) + 'Z')
+                    .style("fill", "#d3d3d3")
+                // .style("stroke", "gray");
+                extremeSideDoor.append('path')
+                    .attr('d', function () {
+                        return 'M' + 15 + ',' + (leftExtremeBodyHeight / 2 - 40) + ' Q' + 15 + ',' + (leftExtremeBodyHeight / 2 - 40 - 30) + ' ' + (leftExtremeBodyWidth / 2) + ',' + (leftExtremeBodyHeight / 2 - 40 - 50) + ' Q' + (leftExtremeBodyWidth - 10) + ',' + (leftExtremeBodyHeight / 2 - 40 - 30) + ' ' + (leftExtremeBodyWidth - 15) + ',' + (leftExtremeBodyHeight / 2 - 50);
+                    })
+                    // .attr('stroke', 'gray')
+                    // .attr('stroke-width', 1)
+                    .attr('fill', '#d3d3d3')
+                // extremeSideDoor.append('path')
+                //     .attr('d', function () {
+                //         return 'M' + (leftExtremeBodyWidth - 15) + ',' + (leftExtremeBodyHeight / 2 - 50) + ' Q' + (leftExtremeBodyWidth - 10) + ',' + (leftExtremeBodyHeight / 2 - 40 - 30) + ' ' + (leftExtremeBodyWidth - 15) + ',' + (leftExtremeBodyHeight / 2 - 50);
+                //     })
+                //     .attr('stroke', 'gray')
+                //     .attr('stroke-width', 1)
+                //     .attr('fill', 'transparent')
+            }
+            addExtremeSideDoor();
+
+            var left_front_pillar = structure.append('svg:g')
+                .attr('transform', 'translate(0,0)');
+            left_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 30 + ',' + (screenHeight - 250 - 80) + ' L' + 90 + ',' + (screenHeight - 250 - 80) + ' L' + 90 + ',' + (screenHeight - 250 - 80);
+                })
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('fill', 'snow')
+                .style("filter", "url(#drop-shadow)")
+                .transition()
+                .ease(d3.easeSin)
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 80 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 90 + ',' + (screenHeight - 250 - 80);
+                })
+                .duration(defaultTransitionTime * 2)
+
+            left_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 70 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 75 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', 'whitesmoke')
+
+            left_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 60 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 60 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', '#e8e8e8')
+            left_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 50 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 45 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', '#d3d3d3')
+
+            left_front_pillar.append('rect')
+                .attr('height', 50)
+                .attr('width', 40)
+                .attr('x', 40)
+                .attr('y', (screenHeight - 250 - 80 - 450) - 50)
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('fill', '#e8e8e8')
+                .style("filter", "url(#drop-shadow)");
+
+
+
+            left_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M' + (40) + ',' + ((screenHeight - 250 - 80 - 450) - 50) + ' Q' + (40) + ',' + ((screenHeight - 250 - 80 - 450) - 50 - 50) + ' ' + 60 + ',' + ((screenHeight - 250 - 80 - 450) - 120) + ' Q' + (80) + ',' + ((screenHeight - 250 - 80 - 450) - 50 - 50) + ' ' + 80 + ',' + ((screenHeight - 250 - 80 - 450) - 50);
+                })
+                .attr('fill', 'whitesmoke')
+                .style("filter", "url(#drop-shadow)");
+            left_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M' + (40) + ',' + ((screenHeight - 250 - 80 - 450) - 50) + ' Q' + (40) + ',' + ((screenHeight - 250 - 80 - 450) - 50 - 50) + ' ' + 60 + ',' + ((screenHeight - 250 - 80 - 450) - 120) + ' Q' + (50) + ',' + ((screenHeight - 250 - 80 - 450) - 50 - 50) + ' ' + 60 + ',' + ((screenHeight - 250 - 80 - 450) - 50);
+                })
+                .attr('fill', '#d3d3d3')
+            var right_front_pillar = structure.append('svg:g')
+                .attr('transform', 'translate(' + (baseStructureWidth - 120) + ',0)');
+            right_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 80 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 90 + ',' + (screenHeight - 250 - 80);
+                })
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('fill', 'snow')
+                .style("filter", "url(#drop-shadow)");
+            right_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 70 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 75 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', 'whitesmoke')
+            right_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 60 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 60 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', '#e8e8e8')
+            right_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 50 + ',' + (screenHeight - 250 - 80 - 450) + ' L' + 45 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', '#d3d3d3')
+            right_front_pillar.append('rect')
+                .attr('height', 50)
+                .attr('width', 40)
+                .attr('x', 40)
+                .attr('y', (screenHeight - 250 - 80 - 450) - 50)
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('fill', '#e8e8e8')
+                .style("filter", "url(#drop-shadow)");
+            right_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M' + (40) + ',' + ((screenHeight - 250 - 80 - 450) - 50) + ' Q' + (40) + ',' + ((screenHeight - 250 - 80 - 450) - 50 - 50) + ' ' + 60 + ',' + ((screenHeight - 250 - 80 - 450) - 120) + ' Q' + (80) + ',' + ((screenHeight - 250 - 80 - 450) - 50 - 50) + ' ' + 80 + ',' + ((screenHeight - 250 - 80 - 450) - 50);
+                })
+                .attr('fill', 'whitesmoke')
+                .style("filter", "url(#drop-shadow)");
+            right_front_pillar.append('path')
+                .attr('d', () => {
+                    return 'M' + (40) + ',' + ((screenHeight - 250 - 80 - 450) - 50) + ' Q' + (40) + ',' + ((screenHeight - 250 - 80 - 450) - 50 - 50) + ' ' + 60 + ',' + ((screenHeight - 250 - 80 - 450) - 120) + ' Q' + (50) + ',' + ((screenHeight - 250 - 80 - 450) - 50 - 50) + ' ' + 60 + ',' + ((screenHeight - 250 - 80 - 450) - 50);
+                })
+                .attr('fill', '#d3d3d3')
+            var left_back_pillar = structure.append('svg:g')
+                .attr('transform', 'translate(0,0)');
+            left_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M300,' + (screenHeight - 250 - 80) + ' L' + 310 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 335 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 345 + ',' + (screenHeight - 250 - 80);
+                })
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('fill', 'whitesmoke')
+                .style("filter", "url(#drop-shadow)");
+            left_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M300,' + (screenHeight - 250 - 80) + ' L' + 310 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 326 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 330 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', '#e8e8e8')
+                .style("filter", "url(#drop-shadow)");
+            left_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M300,' + (screenHeight - 250 - 80) + ' L' + 310 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 318 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 315 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', '#d3d3d3')
+                .style("filter", "url(#drop-shadow)");
+            left_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M' + (310) + ',' + ((screenHeight - 250 - 80 - 230)) + ' Q' + (310) + ',' + ((screenHeight - 250 - 80 - 230) - 50) + ' ' + 323 + ',' + ((screenHeight - 250 - 80 - 230) - 70) + ' Q' + (335) + ',' + ((screenHeight - 250 - 80 - 230) - 50) + ' ' + 335 + ',' + ((screenHeight - 250 - 80 - 230));
+                })
+                .attr('fill', 'whitesmoke')
+                .style("filter", "url(#drop-shadow)");
+
+            left_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M' + (310) + ',' + ((screenHeight - 250 - 80 - 230)) + ' Q' + (310) + ',' + ((screenHeight - 250 - 80 - 230) - 50) + ' ' + 323 + ',' + ((screenHeight - 250 - 80 - 230) - 70) + ' Q' + (320) + ',' + ((screenHeight - 250 - 80 - 230) - 50) + ' ' + 320 + ',' + ((screenHeight - 250 - 80 - 230));
+                })
+                .attr('fill', '#d3d3d3')
+            var right_back_pillar = structure.append('svg:g')
+                .attr('transform', 'translate(' + (baseStructureWidth - 390) + ',0)');
+            right_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 65 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 75 + ',' + (screenHeight - 250 - 80);
+                })
+                // .attr('stroke', 'gray')
+                // .attr('stroke-width', 1)
+                .attr('fill', 'whitesmoke')
+                .style("filter", "url(#drop-shadow)");
+            right_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 56 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 60 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', '#e8e8e8')
+                .style("filter", "url(#drop-shadow)");
+            right_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M30,' + (screenHeight - 250 - 80) + ' L' + 40 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 48 + ',' + (screenHeight - 250 - 80 - 230) + ' L' + 45 + ',' + (screenHeight - 250 - 80);
+                })
+                .attr('fill', '#d3d3d3')
+                .style("filter", "url(#drop-shadow)");
+            right_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M' + (40) + ',' + ((screenHeight - 250 - 80 - 230)) + ' Q' + (40) + ',' + ((screenHeight - 250 - 80 - 230) - 50) + ' ' + 52.5 + ',' + ((screenHeight - 250 - 80 - 230) - 70) + ' Q' + (65) + ',' + ((screenHeight - 250 - 80 - 230) - 50) + ' ' + 65 + ',' + ((screenHeight - 250 - 80 - 230));
+                })
+                .attr('fill', 'whitesmoke')
+                .style("filter", "url(#drop-shadow)");
+            right_back_pillar.append('path')
+                .attr('d', () => {
+                    return 'M' + (40) + ',' + ((screenHeight - 250 - 80 - 230)) + ' Q' + (40) + ',' + ((screenHeight - 250 - 80 - 230) - 50) + ' ' + 52.5 + ',' + ((screenHeight - 250 - 80 - 230) - 70) + ' Q' + (50) + ',' + ((screenHeight - 250 - 80 - 230) - 50) + ' ' + 50 + ',' + ((screenHeight - 250 - 80 - 230));
+                })
+                .attr('fill', '#d3d3d3')
+
+            var timeToggleBtnGrp = structure.append('svg:g')
+                .attr('transform', 'translate(' + ((baseLineWidth / 2) - 300) + ',' + (screenHeight - 200) + ')');
+            // var day_btn = timeToggleBtnGrp.append('rect')
+            //     .attr('id', 'day_btn')
+            //     .attr('x', 0)
+            //     .attr('y', 0)
+            //     .attr('height', 50)
+            //     .attr('width', 150)
+            //     .attr('stroke', 'white')
+            //     .attr('stroke-width', 2)
+            //     .attr('fill', 'whitesmoke')
+            //     .attr('border-radius', 5)
+            // timeToggleBtnGrp.append('text')
+            //     .text('DAY')
+            //     .attr('x', 50)
+            //     .attr('y', 35)
+            //     .attr('font-size',22)
+            //     .attr('color', 'black')
+            var transitionToDay = function () {
+                start
+                    .attr("stop-color", "#ffe2c9")
+                    .transition()
+                    .ease(d3.easeBack)
+                    .attr("stop-color", "#599df0")
+                    .duration(2000);
+                mid.attr("stop-color", "#ffe2c9")
+                    .transition()
+                    .ease(d3.easeBack)
+                    .attr("stop-color", "#b9dfe4")
+                    .duration(defaultTransitionTime * 3);
+            }
+            var transitionToNight = function () {
+                start.transition().ease(d3.easeBack)
+                    .attr("stop-color", "blue")
+                    .attr("stop-opacity", 1)
+                    .duration(defaultTransitionTime * 3);
+            }
+            toggleButtons[0].addEventListener('click', function () {
+                transitionToDay();
+            })
+            toggleButtons[1].addEventListener('click', function () {
+                transitionToNight();
+            })
+            transitionToDay();
+        }
+
+    </script>
+    <style>
+        .btn_1,
+        .btn_2 {
+            position: absolute;
+            bottom: 100px;
+            padding: 10px 10px;
+            border-radius: 3px;
+            background-color: rgb(85, 236, 148);
+            border: none;
+            width: 100px;
+        }
+
+        .btn_1 {
+            left: calc(50% - 105px);
+        }
+
+        .btn_2 {
+            left: calc(50% + 5px);
+        }
+    </style>
+</head>
+
+<body>
+    <button class='btn_1'>Day</button>
+    <button class='btn_2'>Night</button>
+</body>
+
+</html>
